@@ -58,4 +58,5 @@ while requestsMade < 5:
             projectId + '/' + spiderId + '/' + jobId + '?format=json'
         saveToMongo(makeRequest(jobResultURL, 'get'))
     else:
+
         time.sleep(5)
