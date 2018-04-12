@@ -67,4 +67,4 @@ def main():
 scheduler = BackgroundScheduler()
 scheduler.start()
 
-scheduler.add_job(main, 'interval', minute=5)
+scheduler.add_cron_job(main, 'interval', minute=5)
