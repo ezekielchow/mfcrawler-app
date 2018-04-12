@@ -3,9 +3,10 @@ import requests
 import json
 import sys
 import pymongo
-from pymongo import MongoClient
 import uuid
 import time
+from pymongo import MongoClient
+
 
 # scrapinhub info
 projectId = '300910'
@@ -17,14 +18,10 @@ mongoURI = 'mongodb://readwrite:MFcraw1er@ds017193.mlab.com:17193/mfcrawler'
 
 def makeRequest(url, type, data={}):
     r = requests.request(type, url, data=data, auth=(APIKEY, ''))
-    print url
-    print r
-    print json.loads(r.content)
     return json.loads(r.content)
 
 
 def saveToMongo(jsonData):
-    print jsonData
     client = MongoClient(mongoURI)
     funds = client.mfcrawler.funds
     fundPrices = client.mfcrawler.fund_prices
@@ -35,18 +32,18 @@ def saveToMongo(jsonData):
         }
         funds.update({'abbreviation': fund['fund_abbr']}, obj, upsert=True)
         fundId = funds.find_one({'abbreviation': fund['fund_abbr']})['_id']
-
         priceObj = {
             'nav': fund['nav'],
             'date': fund['date'],
             'fund_id': fundId
         }
-        fundPrices.update({'date': fund['date']}, priceObj, upsert=True)
+        fundPrices.update(
+            {'fund_id': fundId, 'date': fund['date']}, priceObj, upsert=True)
 
 
 def main():
     requestsMade = 0
-    while requestsMade < 5:
+    while requestsMade < 3:
         # running the job
         crawlURL = 'https://app.scrapinghub.com/api/run.json'
         data = {
@@ -66,7 +63,7 @@ def main():
             crawledData = makeRequest(jobResultURL, 'get')
             saveToMongo(crawledData)
         else:
-
+            requestsMade += 1
             time.sleep(5)
 
 
