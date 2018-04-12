@@ -6,7 +6,6 @@ import pymongo
 from pymongo import MongoClient
 import uuid
 import time
-from apscheduler.schedulers.background import BackgroundScheduler
 
 # scrapinhub info
 projectId = '300910'
@@ -18,10 +17,14 @@ mongoURI = 'mongodb://readwrite:MFcraw1er@ds017193.mlab.com:17193/mfcrawler'
 
 def makeRequest(url, type, data={}):
     r = requests.request(type, url, data=data, auth=(APIKEY, ''))
+    print url
+    print r
+    print json.loads(r.content)
     return json.loads(r.content)
 
 
 def saveToMongo(jsonData):
+    print jsonData
     client = MongoClient(mongoURI)
     funds = client.mfcrawler.funds
     fundPrices = client.mfcrawler.fund_prices
@@ -58,13 +61,12 @@ def main():
             # getting result from job
             jobResultURL = 'https://storage.scrapinghub.com/items/' + \
                 projectId + '/' + spiderId + '/' + jobId + '?format=json'
-            saveToMongo(makeRequest(jobResultURL, 'get'))
+            time.sleep(10)
+            crawledData = makeRequest(jobResultURL, 'get')
+            saveToMongo(crawledData)
         else:
 
             time.sleep(5)
 
 
-scheduler = BackgroundScheduler()
-scheduler.start()
-
-scheduler.add_job(main, trigger='interval', id="my_main_job", minutes=5)
+main()

@@ -9,6 +9,7 @@ name = "pypi"
 apscheduler = "==3.0.0"
 requests = "*"
 pymongo = "*"
+pyopenssl = "*"
 
 [requires]
 python_version = "2.7"
