@@ -6,6 +6,7 @@ import pymongo
 from pymongo import MongoClient
 import uuid
 import time
+from apscheduler.schedulers.background import BackgroundScheduler
 
 # scrapinhub info
 projectId = '300910'
@@ -40,23 +41,30 @@ def saveToMongo(jsonData):
         fundPrices.update({'date': fund['date']}, priceObj, upsert=True)
 
 
-requestsMade = 0
-while requestsMade < 5:
-    # running the job
-    crawlURL = 'https://app.scrapinghub.com/api/run.json'
-    data = {
-        "project": projectId,
-        "spider": spider
-    }
-    crawlResult = makeRequest(crawlURL, 'post', data)
+def main():
+    requestsMade = 0
+    while requestsMade < 5:
+        # running the job
+        crawlURL = 'https://app.scrapinghub.com/api/run.json'
+        data = {
+            "project": projectId,
+            "spider": spider
+        }
+        crawlResult = makeRequest(crawlURL, 'post', data)
 
-    if crawlResult['status'] == "ok":
-        requestsMade = 10
-        jobId = crawlResult['jobid'].rpartition('/')[2]
-        # getting result from job
-        jobResultURL = 'https://storage.scrapinghub.com/items/' + \
-            projectId + '/' + spiderId + '/' + jobId + '?format=json'
-        saveToMongo(makeRequest(jobResultURL, 'get'))
-    else:
+        if crawlResult['status'] == "ok":
+            requestsMade = 10
+            jobId = crawlResult['jobid'].rpartition('/')[2]
+            # getting result from job
+            jobResultURL = 'https://storage.scrapinghub.com/items/' + \
+                projectId + '/' + spiderId + '/' + jobId + '?format=json'
+            saveToMongo(makeRequest(jobResultURL, 'get'))
+        else:
 
-        time.sleep(5)
+            time.sleep(5)
+
+
+scheduler = BackgroundScheduler()
+scheduler.start()
+
+scheduler.add_job(main, 'interval', hours=2)

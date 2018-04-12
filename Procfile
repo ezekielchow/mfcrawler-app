@@ -1,1 +1,1 @@
-python run-crawler.py
+crawl: python run-crawler.py
