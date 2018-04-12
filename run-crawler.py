@@ -58,6 +58,7 @@ def main():
         if crawlResult['status'] == "ok":
             requestsMade = 10
             jobId = crawlResult['jobid'].rpartition('/')[2]
+            jobId = str(int(jobId) - 1)
             # getting result from job
             jobResultURL = 'https://storage.scrapinghub.com/items/' + \
                 projectId + '/' + spiderId + '/' + jobId + '?format=json'
