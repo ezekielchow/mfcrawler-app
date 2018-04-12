@@ -1,0 +1,14 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+
+[packages]
+apscheduler = "==3.0.0"
+requests = "*"
+pymongo = "*"
+
+[requires]
+python_version = "2.7"
