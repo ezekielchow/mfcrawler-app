@@ -11,6 +11,7 @@ requests = "*"
 pymongo = "*"
 pyopenssl = "*"
 simplejson = "*"
+scrapinghub = "*"
 
 [requires]
 python_version = "2.7"

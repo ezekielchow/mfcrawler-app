@@ -5,9 +5,10 @@ import sys
 import pymongo
 import uuid
 import time
-import decimal
+import string
+from decimal import Decimal
 from pymongo import MongoClient
-
+from scrapinghub import ScrapinghubClient
 
 # scrapinhub info
 projectId = '300910'
@@ -19,58 +20,54 @@ mongoURI = 'mongodb://readwrite:MFcraw1er@ds017193.mlab.com:17193/mfcrawler'
 
 def makeRequest(url, type, data={}):
     r = requests.request(type, url, data=data, auth=(APIKEY, ''))
+    print(r.content)
     return json.loads(r.content)
 
 
-def saveToMongo(jsonData):
+def saveToMongo(items):
     client = MongoClient(mongoURI)
     funds = client.mfcrawler.funds
     fundPrices = client.mfcrawler.fund_prices
-    for fund in jsonData:
-        try:
-            obj = {
-                'abbreviation': fund['fund_abbr'],
-                'name': fund['fund']
-            }
-            funds.update({'abbreviation': fund['fund_abbr']}, obj, upsert=True)
-            fundId = funds.find_one({'abbreviation': fund['fund_abbr']})['_id']
-            nav = json.dumps(fund['nav'])
-            console.log(nav)
-            priceObj = {
-                'nav': nav,
-                'date': fund['date'],
-                'fund_id': fundId
-            }
-            fundPrices.update(
-                {'fund_id': fundId, 'date': fund['date']}, priceObj, upsert=True)
-        except pymongo.errors.PyMongoError as e:
-            print "Mongo Except" + e
+    
+    for fund in items.iter():
+
+        obj = {
+            'abbreviation': fund['fund_abbr'][0],
+            'name': fund['fund'][0]
+        }
+        funds.update({'abbreviation': fund['fund_abbr'][0]}, obj, upsert=True)
+        fundId = funds.find_one({'abbreviation': fund['fund_abbr'][0]})['_id']
+    
+        priceObj = {
+            'nav': float(fund['nav'][0]),
+            'date': fund['date'][0],
+            'fund_id': fundId
+        }
+        fundPrices.update(
+            {'fund_id': fundId, 'date': fund['date'][0]}, priceObj, upsert=True)
 
 
 def main():
     requestsMade = 0
     while requestsMade < 3:
         # running the job
-        crawlURL = 'https://app.scrapinghub.com/api/run.json'
-        data = {
-            "project": projectId,
-            "spider": spider
-        }
-        crawlResult = makeRequest(crawlURL, 'post', data)
+        client = ScrapinghubClient(APIKEY)
+        project = client.get_project(projectId)
+        job = project.jobs.run(spider)
 
-        if crawlResult['status'] == "ok":
+        if job.metadata.get('state') == 'running' or job.metadata.get('state') == 'pending' or job.metadata.get('state') == 'finished':
             requestsMade = 10
-            jobId = crawlResult['jobid'].rpartition('/')[2]
-            jobId = str(int(jobId) - 1)
+            
             # getting result from job
-            jobResultURL = 'https://storage.scrapinghub.com/items/' + \
-                projectId + '/' + spiderId + '/' + jobId + '?format=json'
-            time.sleep(10)
-            crawledData = makeRequest(jobResultURL, 'get')
-            saveToMongo(crawledData)
+            lastFinishedJob =  project.jobs.iter(spider=spider, state='finished', count=1)
+
+            for job in lastFinishedJob:
+                lastJobId = job['key']
+                jobData = client.get_job(lastJobId)
+                saveToMongo(jobData.items)
+
         else:
             requestsMade += 1
             time.sleep(5)
-
 
 main()
