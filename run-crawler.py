@@ -27,20 +27,23 @@ def saveToMongo(jsonData):
     funds = client.mfcrawler.funds
     fundPrices = client.mfcrawler.fund_prices
     for fund in jsonData:
-        obj = {
-            'abbreviation': fund['fund_abbr'],
-            'name': fund['fund']
-        }
-        funds.update({'abbreviation': fund['fund_abbr']}, obj, upsert=True)
-        fundId = funds.find_one({'abbreviation': fund['fund_abbr']})['_id']
-        nav = decimal.Decimal(fund['nav'])
-        priceObj = {
-            'nav': nav,
-            'date': fund['date'],
-            'fund_id': fundId
-        }
-        fundPrices.update(
-            {'fund_id': fundId, 'date': fund['date']}, priceObj, upsert=True)
+        try:
+            obj = {
+                'abbreviation': fund['fund_abbr'],
+                'name': fund['fund']
+            }
+            funds.update({'abbreviation': fund['fund_abbr']}, obj, upsert=True)
+            fundId = funds.find_one({'abbreviation': fund['fund_abbr']})['_id']
+            nav = decimal.Decimal(fund['nav'])
+            priceObj = {
+                'nav': nav,
+                'date': fund['date'],
+                'fund_id': fundId
+            }
+            fundPrices.update(
+                {'fund_id': fundId, 'date': fund['date']}, priceObj, upsert=True)
+        except pymongo.errors.PyMongoError as e:
+            print "Mongo Except" + e
 
 
 def main():
