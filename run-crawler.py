@@ -5,6 +5,7 @@ import sys
 import pymongo
 import uuid
 import time
+import decimal
 from pymongo import MongoClient
 
 
@@ -32,7 +33,7 @@ def saveToMongo(jsonData):
         }
         funds.update({'abbreviation': fund['fund_abbr']}, obj, upsert=True)
         fundId = funds.find_one({'abbreviation': fund['fund_abbr']})['_id']
-        nav = float(fund['nav'])
+        nav = decimal.Decimal(fund['nav'])
         priceObj = {
             'nav': nav,
             'date': fund['date'],
