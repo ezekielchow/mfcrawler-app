@@ -32,6 +32,7 @@ def saveToMongo(jsonData):
         }
         funds.update({'abbreviation': fund['fund_abbr']}, obj, upsert=True)
         fundId = funds.find_one({'abbreviation': fund['fund_abbr']})['_id']
+        print(fund['nav'])
         priceObj = {
             'nav': float(fund['nav']),
             'date': fund['date'],
