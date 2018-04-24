@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import requests
-import json
+import simplejson as json
 import sys
 import pymongo
 import uuid
@@ -34,7 +34,8 @@ def saveToMongo(jsonData):
             }
             funds.update({'abbreviation': fund['fund_abbr']}, obj, upsert=True)
             fundId = funds.find_one({'abbreviation': fund['fund_abbr']})['_id']
-            nav = decimal.Decimal(fund['nav'])
+            nav = json.dumps(fund['nav'])
+            console.log(nav)
             priceObj = {
                 'nav': nav,
                 'date': fund['date'],
