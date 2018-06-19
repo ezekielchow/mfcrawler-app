@@ -25,27 +25,20 @@ def makeRequest(url, type, data={}):
 
 
 def saveToMongo(items):
-    client = MongoClient(mongoURI)
-    funds = client.mfcrawler.funds
-    fundPrices = client.mfcrawler.fund_prices
     
+    jsonArr = []
     for fund in items.iter():
+        obj = {}
+        obj['abbreviation'] = fund['fund_abbr'][0]
+        obj['name'] = fund['fund'][0]
+        obj['date'] = fund['date'][0]
+        obj['nav'] = fund['nav'][0]
+        jsonArr.append(obj)
 
-        obj = {
-            'abbreviation': fund['fund_abbr'][0],
-            'name': fund['fund'][0]
-        }
-        funds.update({'abbreviation': fund['fund_abbr'][0]}, obj, upsert=True)
-        fundId = funds.find_one({'abbreviation': fund['fund_abbr'][0]})['_id']
-    
-        priceObj = {
-            'nav': float(fund['nav'][0]),
-            'date': fund['date'][0],
-            'fund_id': fundId
-        }
-        fundPrices.update(
-            {'fund_id': fundId, 'date': fund['date'][0]}, priceObj, upsert=True)
+    headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+    data = '{"query":"mutation upsertFundsAndPrices($scrapData: JSON){ upsertFundsAndPrices(scrapData:$scrapData){ id } }","variables":{"scrapData":'+ json.dumps(jsonArr, separators=(',',':')) +'}}'
 
+    r = requests.post('http://localhost:4000', headers=headers, data=data)
 
 def main():
     requestsMade = 0
