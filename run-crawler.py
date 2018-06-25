@@ -38,7 +38,7 @@ def saveToMongo(items):
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
     data = '{"query":"mutation upsertFundsAndPrices($scrapData: JSON){ upsertFundsAndPrices(scrapData:$scrapData){ id } }","variables":{"scrapData":'+ json.dumps(jsonArr, separators=(',',':')) +'}}'
 
-    r = requests.post('http://localhost:4000', headers=headers, data=data)
+    r = requests.post('http://mfwatch.online/graphql', headers=headers, data=data)
 
 def main():
     requestsMade = 0
