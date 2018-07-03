@@ -23,7 +23,6 @@ def makeRequest(url, type, data={}):
     print(r.content)
     return json.loads(r.content)
 
-
 def saveToMongo(items):
     
     jsonArr = []
@@ -36,9 +35,10 @@ def saveToMongo(items):
         jsonArr.append(obj)
 
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-    data = '{"query":"mutation upsertFundsAndPrices($scrapData: JSON){ upsertFundsAndPrices(scrapData:$scrapData){ id } }","variables":{"scrapData":'+ json.dumps(jsonArr, separators=(',',':')) +'}}'
+    data = '{"query":"mutation upsertFundsAndPrices($scrapData: JSON){ upsertFundsAndPrices(scrapData:$scrapData){ id } }","variables":{"scrapData":'+ json.dumps(json.dumps(jsonArr, separators=(',',':'))) +'}}'
 
-    r = requests.post('http://mfwatch.online/graphql', headers=headers, data=data)
+    r = requests.post('https://mfwatch.online/graphql', headers=headers, data=data)
+    print(json.dumps(json.dumps(jsonArr, separators=(',',':'))))
 
 def main():
     requestsMade = 0
@@ -48,7 +48,8 @@ def main():
         project = client.get_project(projectId)
         job = project.jobs.run(spider)
 
-        if job.metadata.get('state') == 'running' or job.metadata.get('state') == 'pending' or job.metadata.get('state') == 'finished':
+        # if job.metadata.get('state') == 'running' or job.metadata.get('state') == 'pending' or job.metadata.get('state') == 'finished':
+        if 1 == 1:
             requestsMade = 10
             
             # getting result from job
