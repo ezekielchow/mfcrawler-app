@@ -38,7 +38,6 @@ def saveToMongo(items):
     data = '{"query":"mutation upsertFundsAndPrices($scrapData: JSON){ upsertFundsAndPrices(scrapData:$scrapData){ id } }","variables":{"scrapData":'+ json.dumps(json.dumps(jsonArr, separators=(',',':'))) +'}}'
 
     r = requests.post('https://mfwatch.online/graphql', headers=headers, data=data)
-    print(json.dumps(json.dumps(jsonArr, separators=(',',':'))))
 
 def main():
     requestsMade = 0
@@ -48,8 +47,7 @@ def main():
         project = client.get_project(projectId)
         job = project.jobs.run(spider)
 
-        # if job.metadata.get('state') == 'running' or job.metadata.get('state') == 'pending' or job.metadata.get('state') == 'finished':
-        if 1 == 1:
+        if job.metadata.get('state') == 'running' or job.metadata.get('state') == 'pending' or job.metadata.get('state') == 'finished':
             requestsMade = 10
             
             # getting result from job
